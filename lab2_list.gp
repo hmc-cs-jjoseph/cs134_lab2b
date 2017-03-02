@@ -4,6 +4,7 @@
 #	 generate data reduction graphs for the multi-threaded list project
 #
 # input: lab2_list.csv
+#	lab2b_1.csv
 #	1. test name
 #	2. # threads
 #	3. # iterations per thread
@@ -29,19 +30,19 @@ set terminal png
 set datafile separator ","
 
 # how many threads/iterations we can run without failure (w/o yielding)
-set title "List-1: Cost per Operation vs Iterations"
-set xlabel "Iterations"
-set logscale x 10
-set ylabel "Cost per Operation (ns)"
+set title "List-1: Operations per second vs number of threads - no yields"
+set xlabel "Threads"
+set logscale x 2
+set ylabel "Operations/sec"
 set logscale y 10
-set output 'lab2_list-1.png'
+set output 'lab2b_1.png'
 
-# grep out only single threaded, un-protected, non-yield results
+# grep out non-yield results with both types of protection
 plot \
-     "< grep 'list-none-none,1,' lab2_list.csv" using ($3):($7) \
-	title 'raw' with linespoints lc rgb 'red', \
-     "< grep 'list-none-none,1,' lab2_list.csv" using ($3):($7)/(4*($3)) \
-	title '/4 x iterations' with linespoints lc rgb 'green'
+     "< grep 'list-none-m,' lab2b_1.csv" using ($2):(1000000000*($5)/($6)) \
+	title 'mutex' with linespoints lc rgb 'red', \
+     "< grep 'list-none-s,' lab2b_1.csv" using ($2):(1000000000*($5)/($6)) \
+	title 'sync' with linespoints lc rgb 'green', \
 
 
 set title "List-2: Unprotected Threads and Iterations that run without failure"
