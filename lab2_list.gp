@@ -40,9 +40,9 @@ set output 'lab2b_1.png'
 # grep out non-yield results with both types of protection
 plot \
      "< grep 'list-none-m,' lab2b_1.csv" using ($2):(1000000000*($5)/($6)) \
-	title 'mutex' with linespoints lc rgb 'red', \
+	title 'mutex' with points lc rgb 'red', \
      "< grep 'list-none-s,' lab2b_1.csv" using ($2):(1000000000*($5)/($6)) \
-	title 'sync' with linespoints lc rgb 'green', \
+	title 'sync' with points lc rgb 'green', \
 
 
 set title "List-2: Unprotected Threads and Iterations that run without failure"
