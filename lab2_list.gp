@@ -32,9 +32,9 @@ set datafile separator ","
 # how many threads/iterations we can run without failure (w/o yielding)
 set title "List-1: Operations per second vs number of threads - no yields"
 set xlabel "Threads"
-set logscale x 2
+#set logscale x 2
 set ylabel "Operations/sec"
-set logscale y 10
+#set logscale y 10
 set output 'lab2b_1.png'
 
 # grep out non-yield results with both types of protection
