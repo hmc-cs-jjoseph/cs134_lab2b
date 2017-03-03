@@ -75,10 +75,11 @@ int main(int argc, char **argv) {
 	char ***keys = (char ***) malloc(numThreads*sizeof(char **));
 	srand((unsigned) time(NULL));
 	struct threadArgs inputs[numThreads];
-	for(size_t threadNum = 0; threadNum < numThreads; ++threadNum) {
+	size_t threadNum, elementNum;
+	for(threadNum = 0; threadNum < numThreads; ++threadNum) {
 		allElements[threadNum] = (SortedListElement_t *) malloc(iterations*sizeof(SortedListElement_t));
 		keys[threadNum] = (char **) malloc(iterations*sizeof(char *));
-		for(size_t elementNum = 0; elementNum < iterations; ++elementNum) {
+		for(elementNum = 0; elementNum < iterations; ++elementNum) {
 			keys[threadNum][elementNum] = (char *) malloc(KEYSIZE*sizeof(char));
 			char *key = keys[threadNum][elementNum];
 			genKey(key, KEYSIZE);
@@ -95,7 +96,7 @@ int main(int argc, char **argv) {
 	struct timespec start, finish;
 	pthread_t threads[numThreads];
 	clock_gettime(CLOCK_MONOTONIC, &start);
-	for(size_t threadNum = 0; threadNum < numThreads; ++threadNum) {
+	for(threadNum = 0; threadNum < numThreads; ++threadNum) {
 		int rc = pthread_create(&threads[threadNum], NULL, runThread, &inputs[threadNum]) != 0;
 		if(rc != 0) {
 			errno = rc;
@@ -105,7 +106,7 @@ int main(int argc, char **argv) {
 	}
 	
 	/* Collect threads */
-	for(size_t threadNum = 0; threadNum < numThreads; ++threadNum) {
+	for(threadNum = 0; threadNum < numThreads; ++threadNum) {
 		int rc = pthread_join(threads[threadNum], NULL);
 		if(rc != 0) {
 			errno = rc;
@@ -119,9 +120,9 @@ int main(int argc, char **argv) {
 	}
 		
 	/* Free memory */
-	for(size_t threadNum = 0; threadNum < numThreads; ++threadNum) {
+	for(threadNum = 0; threadNum < numThreads; ++threadNum) {
 		free(allElements[threadNum]);
-		for(size_t elementNum = 0; elementNum < iterations; ++ elementNum) {
+		for(elementNum = 0; elementNum < iterations; ++ elementNum) {
 			free(keys[threadNum][elementNum]);
 		}
 		free(keys[threadNum]);
@@ -235,7 +236,8 @@ void *runThread(void *args) {
 	char sync_opt = argStruct->sync_opt;
 
 	/* Insert elements into list */
-	for(size_t i = 0; i < iterations; ++i) {
+	size_t i;
+	for(i = 0; i < iterations; ++i) {
 		if(sync_opt == 'm') {
 			SortedList_insert_m(list, &elements[i]);
 		} else if(sync_opt == 's') {
@@ -262,7 +264,7 @@ void *runThread(void *args) {
 	/* Look up and delete elements */
 	SortedListElement_t *lookupElement;
 	int delete_retval;
-	for(size_t i = 0; i < iterations; ++i) {
+	for(i = 0; i < iterations; ++i) {
 		if(sync_opt == 'm') {
 			lookupElement = SortedList_lookup_m(list, keys[i]);
 		} else if(sync_opt == 's') {

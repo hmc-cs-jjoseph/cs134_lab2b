@@ -1,6 +1,7 @@
 GXX=gcc -std=c11
 FLAGS=-Wall -Wextra -Wpedantic
 PTHREAD=-lpthread
+TIME=-lrt
 LISTSOURCES=SortedList.h SortedList.c SortedList_m.c SortedList_m.h SortedList_s.c SortedList_s.h
 MODULES=lab2_list.c
 DATA=lab2_list.csv
@@ -12,7 +13,7 @@ lab2_list: lab2_list.c SortedList.c SortedList_m.c SortedList_s.c
 	make SortedList
 	make SortedList_m
 	make SortedList_s
-	$(GXX) lab2_list.c -o lab2_list $(PTHREAD) $(FLAGS) SortedList.o SortedList_s.o SortedList_m.o
+	$(GXX) lab2_list.c -o lab2_list $(PTHREAD) $(FLAGS) SortedList.o SortedList_s.o SortedList_m.o $(TIME) 
 
 SortedList: SortedList.h SortedList.c
 	$(GXX) -c SortedList.c  $(PTHREAD) $(FLAGS)
