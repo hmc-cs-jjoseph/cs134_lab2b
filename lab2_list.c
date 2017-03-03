@@ -237,6 +237,8 @@ void genKey(char *keybuff, size_t bufflen) {
 }
 
 size_t hash(const char *key) {
+	return 0;
+}
 
 void *runThread(void *args) {
 	struct threadArgs *argStruct = (struct threadArgs *) args;
