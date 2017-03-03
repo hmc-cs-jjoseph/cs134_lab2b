@@ -1,6 +1,7 @@
-GXX=gcc 
+GXX=gcc -std=c11
 FLAGS=-Wall -Wextra -Wpedantic
 PTHREAD=-lpthread
+TIME=-lrt
 LISTSOURCES=SortedList.h SortedList.c SortedList_m.c SortedList_m.h SortedList_s.c SortedList_s.h
 MODULES=lab2_list.c
 DATA=lab2_list.csv
