@@ -6,25 +6,30 @@ MODULES=lab2_list.c
 DATA=lab2_list.csv
 IMAGES=lab2_list-1.png lab2_list-2.png lab2_list-3.png lab2_list-4.png
 TESTS=list_test.sh
+PROFILER=-lprofiler
 
 
 lab2_list: lab2_list.c SortedList.c SortedList_m.c SortedList_s.c
 	make SortedList
 	make SortedList_m
 	make SortedList_s
-	$(GXX) lab2_list.c -o lab2_list $(PTHREAD) $(FLAGS) SortedList.o SortedList_s.o SortedList_m.o
+	$(GXX) -g lab2_list.c -o lab2_list $(PTHREAD) $(FLAGS) SortedList.o SortedList_s.o SortedList_m.o
 
 SortedList: SortedList.h SortedList.c
-	$(GXX) -c SortedList.c  $(PTHREAD) $(FLAGS)
+	$(GXX) -g -c SortedList.c  $(PTHREAD) $(FLAGS)
 
 SortedList_s: SortedList_s.h SortedList_s.c
-	$(GXX) -c SortedList_s.c  $(PTHREAD) $(FLAGS)
+	$(GXX) -g -c SortedList_s.c  $(PTHREAD) $(FLAGS)
 
 SortedList_m: SortedList_m.h SortedList_m.c
-	$(GXX) -c SortedList_m.c  $(PTHREAD) $(FLAGS)
+	$(GXX) -g -c SortedList_m.c  $(PTHREAD) $(FLAGS)
 
 graphs:
 	gnuplot lab2_list.gp
+
+profile:
+	make lab2_list
+	CPUPROFILE=/tmp/profile ./lab2_list --threads=12 --iterations=1000 --sync=s
 
 tests:
 	make lab2_list

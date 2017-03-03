@@ -17,7 +17,7 @@ int yield_d;
 int yield_l;
 
 struct threadArgs{
-	SortedList_t *list;
+	SortedList_t *lists;
 	SortedListElement_t *elements;
 	char **keys;
 	size_t iterations;
@@ -32,6 +32,7 @@ struct programArgs{
 	size_t yield_i;
 	size_t yield_d;
 	size_t yield_l;
+	size_t numlists;
 	char *yield_opts;
 	char sync_opt;
 };
@@ -53,6 +54,7 @@ int main(int argc, char **argv) {
 	yield_i = args.yield_i;
 	yield_d = args.yield_d;
 	yield_l = args.yield_l;
+	size_t numlists = args.numlists;
 	char sync_opt = args.sync_opt;
 	if(sync_opt == 0) {
 		sprintf(sync_name, "none");
@@ -70,7 +72,7 @@ int main(int argc, char **argv) {
 
 
 	/* Initialize elements */
-	SortedList_t list = {NULL, NULL, NULL};
+	SortedList_t *lists = (SortedList_t *) malloc(numlists*sizeof(SortedList_t));
 	SortedListElement_t **allElements = (SortedListElement_t **) malloc(numThreads*sizeof(SortedListElement_t *)); 
 	char ***keys = (char ***) malloc(numThreads*sizeof(char **));
 	srand((unsigned) time(NULL));
@@ -84,7 +86,7 @@ int main(int argc, char **argv) {
 			genKey(key, KEYSIZE);
 			allElements[threadNum][elementNum].key = key;
 		}
-		inputs[threadNum].list = &list;
+		inputs[threadNum].lists = lists;
 		inputs[threadNum].elements = allElements[threadNum];
 		inputs[threadNum].keys = keys[threadNum];
 		inputs[threadNum].iterations = iterations;
@@ -114,8 +116,10 @@ int main(int argc, char **argv) {
 		}
 	}
 	clock_gettime(CLOCK_MONOTONIC, &finish);
-	if(SortedList_length(&list) != 0) {
-		exit(2);
+	for(size_t i = 0; i < numlists; ++i) {
+		if(SortedList_length(&lists[i]) != 0) {
+			exit(2);
+		}
 	}
 		
 	/* Free memory */
@@ -128,12 +132,12 @@ int main(int argc, char **argv) {
 	}
 	free(allElements);
 	free(keys);
+	free(lists);
 
 	size_t time = 1000000000*(finish.tv_sec - start.tv_sec) + (finish.tv_nsec - start.tv_nsec);
 	size_t operations = numThreads * iterations * 3;
 	size_t aveTime = time/operations;
-	size_t numLists = 1;
-	fprintf(stdout, "%s,%lu,%lu,%lu,%lu,%lu,%lu\n", testname, numThreads, iterations,numLists, operations, time, aveTime);
+	fprintf(stdout, "%s,%lu,%lu,%lu,%lu,%lu,%lu\n", testname, numThreads, iterations, numlists, operations, time, aveTime);
 
 	return 0;
 }
@@ -153,6 +157,7 @@ void getArguments(struct programArgs *arguments, int argc, char **argv) {
 	arguments->yield_l = 0;
 	arguments->sync_opt = 0;
 	arguments->yield_opts = NULL;
+	arguments->numlists = 1;
 	char opt;
 	int optind;
   struct option options[] = {
@@ -160,12 +165,14 @@ void getArguments(struct programArgs *arguments, int argc, char **argv) {
     {"iterations", required_argument, 0, 'i'},
 		{"sync", required_argument, 0, 's'},
 		{"yield", required_argument, 0, 'y'},
+		{"lists", required_argument, 0, 'l'},
     {0, 0, 0, 0}};
-	char *usage_msg = "Usage: ./lab2_add [ ...options... ]\n"
+	char *usage_msg = "Usage: ./lab2_list [ ...options... ]\n"
 						"Valid options:\n"
-						"--threads=<n threads> (default 1)\n"
-						"--iterations=<k iterations> (default 1)\n"
+						"--threads=<number of threads> (default 1)\n"
+						"--iterations=<number of iterations> (default 1)\n"
 						"--yield=<yield options: any combinaiton of i, d, and l>\n"
+						"--lists=<number of lists> (default 1)\n"
 						"--sync=<sync options: m, or s>\n";
 
 	char sync_arg;
@@ -193,6 +200,8 @@ void getArguments(struct programArgs *arguments, int argc, char **argv) {
 					++i;
 				}
 				break;
+			case 'l':
+				arguments->numlists = (size_t) atoi(optarg);
       case 't':
 				arguments->threads = (size_t) atoi(optarg);
       	break;
@@ -226,9 +235,11 @@ void genKey(char *keybuff, size_t bufflen) {
 	}
 }
 
+size_t hash(const char *key) {
+
 void *runThread(void *args) {
 	struct threadArgs *argStruct = (struct threadArgs *) args;
-	SortedList_t *list = argStruct->list;
+	SortedList_t *lists = argStruct->lists;
 	SortedListElement_t *elements = argStruct->elements;
 	char **keys = argStruct->keys;
 	size_t iterations = argStruct->iterations;
