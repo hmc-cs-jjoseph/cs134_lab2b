@@ -1,13 +1,11 @@
-GXX=gcc -std=c11
+GXX=gcc
 FLAGS=-Wall -Wextra -Wpedantic
 PTHREAD=-lpthread
-TIME=-lrt
 LISTSOURCES=SortedList.h SortedList.c SortedList_m.c SortedList_m.h SortedList_s.c SortedList_s.h
 MODULES=lab2_list.c
 DATA=lab2_list.csv
 IMAGES=lab2_list-1.png lab2_list-2.png lab2_list-3.png lab2_list-4.png
 TESTS=list_test.sh
-PROFILER=-lprofiler
 
 
 lab2_list: lab2_list.c SortedList.c SortedList_m.c SortedList_s.c
@@ -30,7 +28,7 @@ graphs:
 
 profile:
 	make lab2_list
-	CPUPROFILE=/tmp/profile ./lab2_list --threads=12 --iterations=1000 --sync=s
+	./lab2_list --threads=12 --iterations=1000 --sync=s
 
 tests:
 	make lab2_list

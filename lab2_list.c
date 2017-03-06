@@ -5,23 +5,25 @@
 #include <time.h>
 #include <signal.h>
 #include <errno.h>
+#include <string.h>
 #include "SortedList.h"
 #include "SortedList_m.h"
 #include "SortedList_s.h"
 
 #define KEYSIZE 16
 
-pthread_mutex_t mutex_lock = PTHREAD_MUTEX_INITIALIZER;
 int yield_i;
 int yield_d;
 int yield_l;
 
 struct threadArgs{
 	SortedList_t *lists;
+	size_t numlists;
 	SortedListElement_t *elements;
 	char **keys;
 	size_t iterations;
 	char sync_opt;
+	pthread_mutex_t *locks;
 };
 
 void *runThread(void *args);
@@ -73,6 +75,11 @@ int main(int argc, char **argv) {
 
 	/* Initialize elements */
 	SortedList_t *lists = (SortedList_t *) malloc(numlists*sizeof(SortedList_t));
+	pthread_mutex_t lockcopy = PTHREAD_MUTEX_INITIALIZER;
+	pthread_mutex_t *locks = (pthread_mutex_t *) malloc(numlists*sizeof(pthread_mutex_t));
+	for(size_t i = 0; i < numlists; ++i) {
+		memcpy(&locks[i], &lockcopy, sizeof(lockcopy));
+	}
 	SortedListElement_t **allElements = (SortedListElement_t **) malloc(numThreads*sizeof(SortedListElement_t *)); 
 	char ***keys = (char ***) malloc(numThreads*sizeof(char **));
 	srand((unsigned) time(NULL));
@@ -88,10 +95,12 @@ int main(int argc, char **argv) {
 			allElements[threadNum][elementNum].key = key;
 		}
 		inputs[threadNum].lists = lists;
+		inputs[threadNum].numlists = numlists;
 		inputs[threadNum].elements = allElements[threadNum];
 		inputs[threadNum].keys = keys[threadNum];
 		inputs[threadNum].iterations = iterations;
 		inputs[threadNum].sync_opt = sync_opt;
+		inputs[threadNum].locks = locks;
 	}
 
 	/* Spawn threads */
@@ -124,9 +133,9 @@ int main(int argc, char **argv) {
 	}
 		
 	/* Free memory */
-	for(threadNum = 0; threadNum < numThreads; ++threadNum) {
+	for(size_t threadNum = 0; threadNum < numThreads; ++threadNum) {
 		free(allElements[threadNum]);
-		for(elementNum = 0; elementNum < iterations; ++ elementNum) {
+		for(size_t elementNum = 0; elementNum < iterations; ++ elementNum) {
 			free(keys[threadNum][elementNum]);
 		}
 		free(keys[threadNum]);
@@ -236,61 +245,79 @@ void genKey(char *keybuff, size_t bufflen) {
 	}
 }
 
-size_t hash(const char *key) {
-	return 0;
+size_t hashlistnum(const char *key, size_t keysize) {
+	size_t hash;
+	for(size_t i = 0; i < keysize; ++i) {
+		hash += key[i] * i;
+	}
+	return hash;
 }
 
 void *runThread(void *args) {
 	struct threadArgs *argStruct = (struct threadArgs *) args;
 	SortedList_t *lists = argStruct->lists;
+	size_t numlists = argStruct->numlists;
+	pthread_mutex_t *locks = argStruct->locks;
 	SortedListElement_t *elements = argStruct->elements;
 	char **keys = argStruct->keys;
 	size_t iterations = argStruct->iterations;
 	char sync_opt = argStruct->sync_opt;
 
 	/* Insert elements into list */
-	size_t i;
-	for(i = 0; i < iterations; ++i) {
+	size_t listnum;
+	for(size_t i = 0; i < iterations; ++i) {
+		listnum = hashlistnum(elements[i].key, KEYSIZE) % numlists;
 		if(sync_opt == 'm') {
-			SortedList_insert_m(list, &elements[i]);
+			pthread_mutex_lock(&locks[listnum]);
+			SortedList_insert(&lists[listnum], &elements[i]);
+			pthread_mutex_unlock(&locks[listnum]);
 		} else if(sync_opt == 's') {
-			SortedList_insert_s(list, &elements[i]);
+			SortedList_insert_s(&lists[listnum], &elements[i]);
 		} else {
-			SortedList_insert(list, &elements[i]);
+			SortedList_insert(&lists[listnum], &elements[i]);
 		}
 	}
 
 	/* Check length */
 	int length;
-	if(sync_opt == 'm') {
-		length = SortedList_length_m(list);
-	} else if(sync_opt == 's') {
-		length = SortedList_length_s(list);
-	} else {
-		length = SortedList_length(list);
-	}
-	if(length < 0) {
-		fprintf(stderr, "In length check:\nCorrupted list.\n");
-		exit(2);
+	int singlelistlength;
+	for(size_t i = 0; i < numlists; ++i) {
+		if(sync_opt == 'm') {
+				pthread_mutex_lock(&locks[listnum]);
+				singlelistlength = SortedList_length(&lists[listnum]);
+				pthread_mutex_unlock(&locks[listnum]);
+		} else if(sync_opt == 's') {
+			singlelistlength = SortedList_length_s(&lists[listnum]);
+		} else {
+			singlelistlength = SortedList_length(&lists[listnum]);
+		}
+		if(singlelistlength < 0) {
+			fprintf(stderr, "In length check:\nCorrupted list.\n");
+			exit(2);
+		}
+		length += singlelistlength;
 	}
 
 	/* Look up and delete elements */
 	SortedListElement_t *lookupElement;
 	int delete_retval;
-	for(i = 0; i < iterations; ++i) {
+	for(size_t i = 0; i < iterations; ++i) {
+		listnum = hashlistnum(elements[i].key, KEYSIZE) % numlists;
 		if(sync_opt == 'm') {
-			lookupElement = SortedList_lookup_m(list, keys[i]);
+			pthread_mutex_lock(&locks[listnum]);
+			lookupElement = SortedList_lookup_m(&lists[listnum], keys[i]);
 		} else if(sync_opt == 's') {
-			lookupElement = SortedList_lookup_s(list, keys[i]);
+			lookupElement = SortedList_lookup_s(&lists[listnum], keys[i]);
 		} else {
-			lookupElement = SortedList_lookup(list, keys[i]);
+			lookupElement = SortedList_lookup(&lists[listnum], keys[i]);
 		}
 		if(lookupElement == NULL) {
 			fprintf(stderr, "In lookup check:\nCorrupted list. Couldn't find key.\n");
 			exit(2);
 		}
 		if(sync_opt == 'm') {
-			delete_retval = SortedList_delete_m(lookupElement);
+			delete_retval = SortedList_delete(lookupElement);
+			pthread_mutex_unlock(&locks[listnum]);
 		} else if(sync_opt == 's') {
 			delete_retval = SortedList_delete_s(lookupElement);
 		} else {
