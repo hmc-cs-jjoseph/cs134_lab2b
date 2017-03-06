@@ -106,7 +106,7 @@ int main(int argc, char **argv) {
 	/* Spawn threads */
 	struct timespec start, finish;
 	pthread_t threads[numThreads];
-	clock_gettime(CLOCK_MONOTONIC, &start);
+	timespec_get(&start, TIME_UTC);
 	for(threadNum = 0; threadNum < numThreads; ++threadNum) {
 		int rc = pthread_create(&threads[threadNum], NULL, runThread, &inputs[threadNum]) != 0;
 		if(rc != 0) {
@@ -125,7 +125,7 @@ int main(int argc, char **argv) {
 			exit(1);
 		}
 	}
-	clock_gettime(CLOCK_MONOTONIC, &finish);
+	timespec_get(&finish, TIME_UTC);
 	for(size_t i = 0; i < numlists; ++i) {
 		if(SortedList_length(&lists[i]) != 0) {
 			exit(2);
