@@ -3,7 +3,10 @@ EMAIL: jjoseph@hmc.edu
 ID: 040161840
 
 ABOUT:
+ -Instead of google-pprof, I used the standard linux perf. It was way better documented and easier to learn. 
+ 	-I don't think perf is installed on little. But I'm also skeptical about the functionality of google-pprof on little - I was having trouble including it.
  -On my plot lab2b_3.png, the data points for spin block out the points for mutex because they're in the same place. I know they're there because if I ge rid of the spin data points the mutex points show up.
+ -My data is separated out into 5 files, with the same name as the plots they're used to create. The expected file `lab2b_list.csv` exists but is empty.
 
 FILES:
  - lab2_list.c
