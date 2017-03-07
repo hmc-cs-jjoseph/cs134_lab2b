@@ -3,6 +3,7 @@ EMAIL: jjoseph@hmc.edu
 ID: 040161840
 
 ABOUT:
+ -On my plot lab2b_3.png, the data points for spin block out the points for mutex because they're in the same place. I know they're there because if I ge rid of the spin data points the mutex points show up.
 
 FILES:
  - lab2_list.c
@@ -38,3 +39,26 @@ Where (what lines of code) are consuming most of the cycles when the spin-lock v
 Why does this operation become so expensive with large numbers of threads?
 	-This is expensive under high contention because every thread that wakes up blocked sits at this function and executes the expensive atomit test and set until it's out of time.
 
+Question 2.3.3 - Mutex wait time
+Look at the average time per operation (vs # threads) and the average wait-for-mutex time (vs #threads).
+Why does the average lock-wait time rise so dramatically with the number of contending threads?
+	-The average wait time increases drastically with the number of contending threads because each thread has less of a chance
+	of acquiring the lock, forcing each thread to wait longer.
+Why does the completion time per operation rise (less dramatically) with the number of contending threads?
+	-The completion time increases for the same reason, but it doesn't rise as quickly because the operations are always being completed. 
+How is it possible for the wait time per operation to go up faster (or higher) than the completion time per operation?
+	-Wait time increases faster than operation time because the total operation time includes wait time AND the time actually performing code.
+	Therefore, the time actually executing the operations, and not just waiting, helps to amortize the wait time in each operation.
+
+QUESTION 2.3.4 - Performance of Partitioned Lists
+Explain the change in performance of the synchronized methods as a function of the number of lists.
+	-The throughput of the synchronized methods increases as the number of lists increases.
+Should the throughput continue increasing as the number of lists is further increased? If not, explain why not.
+	-In the limit where the number of lists approaches the number of elements, this data structure becomes closer to a standard hash table that avoids collisions using separate chaining.
+	The throughput will continue to increase, because more lists results in less contention over locks.
+It seems reasonable to suggest the throughput of an N-way partitioned list should be equivalent to the throughput of a single list with fewer (1/N) threads. Does this appear to be true in the above curves? If not, explain why not.
+	-This is not the case in the curves generated.
+	If this were true, a 4-way partitioned list with 4 threads would have the same throughput as a single list with 1 thread. 
+	An 8-way partitioned list with 8 threads would also have the same throughput, as would a 16-way 16-thread implementation.
+	However, the graphs show that the throughput for 4-way 4-thread is slightly higher than 1-way, 1-thread, and 8-way 8-thread is even higher.
+	The increase is small, but consistent.
