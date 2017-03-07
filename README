@@ -3,47 +3,38 @@ EMAIL: jjoseph@hmc.edu
 ID: 040161840
 
 ABOUT:
-I used a slip day. Actually, I guess it's past midnight now on my slipped day. I'd rather lose points than use a second slip day if that's possible.
-I get one error on the sanity check because I use __sync_bool_compare_and_swap instead of __sync_val_compare_and_swap.
-I think there should be some leniency here because my solution is still just as correct.
 
 FILES:
- - lab2_add.c
  - lab2_list.c
  - SortedList.h
  - SortedList.c
- - SortedList_m.h - header for mutex protected SortedList
- - SortedList_m.c - implementation of mutex protected SortedList
- - SortedList_s.h - header for spin lock protected SortedList
- - SortedList_s.c - implementation of spin lock protected SortedList
- - lab2_add.csv 
  - lab2_list.csv
  - add_test.sh - shell script for running add tests
  - list_test.sh - shell script for running list tests
 
 QUESTIONS
 
-Question 2.1.1
-Why does it take so many iterations before errors are seen?
-Why does a significantly smaller number of iterations so seldom fail?
-The critical section here is the add function. Since it is very short, the likelihood of a thread being preempted is low, so it takes many iterations to randomly preempt in the critical section, between the line where the sum is computed and the counter is set to the sum. A small number of iterations rarely fails because with few iterations, each thread likely has time to execute its full amount of iterations before being time slice ended.
+Question 2.3.1 - Cycles in the basic list implementation
+Where do you believe most of the cycles are spent in the 1 and 2-thread list tests ?
+Why do you believe these to be the most expensive parts of the code?
+	-With just 1 or 2 threads, there's very little contention. I'd bet that the most cycles are spent in the insert
+	operations, because they need to traverse an average of half the list length and compare each key, which will
+	be an expensive operation. Length, however, may also be expensive because it needs to traverse the entire
+	list.
+Where do you believe most of the time/cycles are being spent in the high-thread spin-lock tests?
+	-In the spin lock tests with high contention, a huge amount of time is spent spinning. Most threads
+	won't be able to run when given the opportunity, and will sit and spin for their entire time.
+Where do you believe most of the time/cycles are being spent in the high-thread mutex tests?
+	-In the mutex implementation, the blocked threads won't waste time spinning and doing nothing. When a blocked
+	thread is brought to the front of the queue, if it cannot take the lock, it won't spin, but it will cause a
+	context switch to put the thread back to sleep to wait its turn again. Significant time is probably spent in 
+	the context switches.
 
-
-Question 2.1.2
-Why are the --yield runs so much slower?
-Where is the additional time going?
-Is it possible to get valid per-operation timings if we are using the --yield option?
-If so, explain how. If not, explain why not.
-The yield runs are much slower because each time the program goes to do any operation, the thread is forced to yield, forcing a context switch which adds a lot of overhead time. The per-operation times aren't valid because each operation now has the added time of the context switch, which is large compared to the time of the simple operation.
-
-Question 2.1.3
-Why does the average cost per operation drop with increasing iterations?
-If the cost per iteration is a function of the number of iterations, how do we know how many iterations to run (or what the "correct" cost is)?
-For the non-yield case, the average cost per operation drops as iterations increase because each thread uses its full time slice executing operations. For low iterations, the relative time performing operations compared to switching threads is low, so the time switching threads impacts the average operation cost. Eventually, once the operation time amortizes the switching time, the cost per operation will stabilize at some value.
-
-Question 2.1.4
-Why do all of the options perform similarly for low numbers of threads?
-Why do the three protected operations slow down as the number of threads rises?
-For low numbers of threads, there is very little contention. Each thread is waiting for fewer other threads to release locks. As the number of threads increases, each thread is waiting on more and more threads to exit critical sections and allow other threads to run.
-
+Question 2.3.2 - Execution profiling
+Where (what lines of code) are consuming most of the cycles when the spin-lock version of the list exerciser is run with a large number of threads?
+	- I used linux perf instead of google-pprof. perf samples at a continuous rate, and so the number of samples collected by perf in a given method
+	is directly proportional to the time spent in that method. perf shows that the vast majority of the time was spent spinning in the spin lock.
+		- In the test I just did, 88% of samples were taken during the routine spinLock
+Why does this operation become so expensive with large numbers of threads?
+	-This is expensive under high contention because every thread that wakes up blocked sits at this function and executes the expensive atomit test and set until it's out of time.
 

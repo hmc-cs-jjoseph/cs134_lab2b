@@ -39,31 +39,23 @@ set output 'lab2b_1.png'
 
 # grep out non-yield results with both types of protection
 plot \
-     "< grep 'list-none-m,' lab2b_1.csv" using ($2):(1000000000*($5)/($6)) \
+     "< grep 'list-none-m' lab2_list.csv" using ($2):(1000000000*($5)/($6)) \
 	title 'mutex' with points lc rgb 'red', \
-     "< grep 'list-none-s,' lab2b_1.csv" using ($2):(1000000000*($5)/($6)) \
+     "< grep 'list-none-s' lab2_list.csv" using ($2):(1000000000*($5)/($6)) \
 	title 'sync' with points lc rgb 'green'
 
 
-set title "List-2: Unprotected Threads and Iterations that run without failure"
+set title "List-2: Average wait-for-lock time and operation time vs number of threads"
 set xlabel "Threads"
-set logscale x 2
-set xrange [0.75:]
-set ylabel "Successful Iterations"
-set logscale y 10
-set output 'lab2_list-2.png'
-# note that unsuccessful runs should have produced no output
+#set logscale x 2
+set ylabel "Time (ns)"
+#set logscale y 10
+set output 'lab2b_2.png'
 plot \
-     "< grep list-none-none lab2_list.csv" using ($2):($3) \
-	title 'w/o yields' with points lc rgb 'green', \
-     "< grep list-i-none lab2_list.csv" using ($2):($3) \
-	title 'yield=i' with points lc rgb 'red', \
-     "< grep list-d-none lab2_list.csv" using ($2):($3) \
-	title 'yield=d' with points lc rgb 'violet', \
-     "< grep list-il-none lab2_list.csv" using ($2):($3) \
-	title 'yield=il' with points lc rgb 'orange', \
-     "< grep list-dl-none lab2_list.csv" using ($2):($3) \
-	title 'yield=dl' with points lc rgb 'blue'
+     "< grep list-none-m lab2_list.csv" using ($2):($8) \
+	title 'wait-for-lock' with points lc rgb 'green', \
+     "< grep list-i-none lab2_list.csv" using ($2):($7) \
+	title 'operation' with points lc rgb 'red'
      
 set title "List-3: Protected Iterations that run without failure"
 unset logscale x
