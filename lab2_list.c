@@ -227,7 +227,7 @@ void getArguments(struct programArgs *arguments, int argc, char **argv) {
 						"--sync=<sync options: m, or s>\n";
 
 	char sync_arg;
-  while((opt = getopt_long(argc, argv, "t:i:s:y:", options, &optind)) != -1) {
+  while((opt = getopt_long(argc, argv, "t:i:s:y:l:", options, &optind)) != -1) {
     switch(opt) {
 			case 'y':
 				arguments->yield_opts = optarg;
@@ -253,6 +253,7 @@ void getArguments(struct programArgs *arguments, int argc, char **argv) {
 				break;
 			case 'l':
 				arguments->numlists = (size_t) atoi(optarg);
+				break;
       case 't':
 				arguments->threads = (size_t) atoi(optarg);
       	break;

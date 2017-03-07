@@ -3,11 +3,19 @@
 # jjoseph@hmc.edu
 # 040161840
 
+DATAFILE0=lab2b_list.csv
 DATAFILE1=lab2b_1.csv
 DATAFILE2=lab2b_2.csv
 DATAFILE3=lab2b_3.csv
 DATAFILE4=lab2b_4.csv
 DATAFILE5=lab2b_5.csv
+
+if [ ! -f $DATAFILE0 ]
+then
+	touch $DATAFILE0
+	echo "Don't use this file" >> $DATAFILE0
+	echo "I separated out data into 5 different files because I found that easier" >> $DATAFILE0
+fi
 
 if [ ! -f $DATAFILE1 ]
 then
