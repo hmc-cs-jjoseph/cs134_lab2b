@@ -1,4 +1,8 @@
 #!/bin/bash
+# Jesse Joseph
+# jjoseph@hmc.edu
+# 040161840
+
 DATAFILE1=lab2b_1.csv
 DATAFILE2=lab2b_2.csv
 DATAFILE3=lab2b_3.csv

@@ -1,3 +1,7 @@
+# Jesse Joseph
+# jjoseph@hmc.edu
+# 040161840
+
 GXX=gcc -std=c11
 FLAGS=-Wall -Wextra -Wpedantic
 PTHREAD=-lpthread
@@ -6,6 +10,7 @@ MODULES=lab2_list.c
 DATA=lab2b_1.csv lab2b_2.csv lab2b_3.csv lab2b_4.csv lab2b_5.csv
 IMAGES=lab2b_1.png lab2b_2.png lab2b_3.png lab2b_4.png lab2b_5.png
 TESTS=list_test.sh
+GNUPLOT=lab2_list.gp
 
 
 lab2_list: lab2_list.c SortedList.c
@@ -28,7 +33,7 @@ tests:
 	bash list_test.sh
 
 dist:
-	tar -czvf lab2b-040161840.tar.gz Makefile README $(LISTSOURCES) $(MODULES) $(DATA) $(IMAGES) $(TESTS)
+	tar -czvf lab2b-040161840.tar.gz Makefile README $(LISTSOURCES) $(MODULES) $(DATA) $(IMAGES) $(TESTS) $(GNUPLOT)
 
 clean:
 	-rm lab2_list

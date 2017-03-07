@@ -1,3 +1,8 @@
+/* \author Jesse Joseph
+ * \email jjoseph@hmc.edu
+ * \ID 040161840
+ */
+
 #include <stdlib.h>
 #include <pthread.h>
 #include <stdio.h>
