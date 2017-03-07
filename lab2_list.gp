@@ -49,7 +49,7 @@ set title "List-2: Average wait-for-lock time and operation time vs number of th
 set xlabel "Threads"
 #set logscale x 2
 set ylabel "Time (ns)"
-#set logscale y 10
+set logscale y 10
 set output 'lab2b_2.png'
 plot \
      "< grep list-none-m lab2_list.csv" using ($2):($8) \
